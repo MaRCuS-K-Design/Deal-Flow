@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DealFlow — Marcus</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Playfair+Display:wght@700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy: #1a1a1f;
+  --navy2: #222228;
+  --navy3: #2a2a32;
+  --navy4: #32323c;
+  --brass: #64b5d9;
+  --brass2: #8ecfee;
+  --slate: #8a8a9a;
+  --slate2: #6a6a7a;
+  --cream: #e8eaf0;
+  --cream2: #c0c4d0;
+  --white: #ffffff;
+  --green: #2ecc71;
+  --amber: #f0a500;
+  --red: #e74c3c;
+  --border: rgba(100,181,217,0.15);
+  --border2: rgba(100,181,217,0.3);
+  --hot: #e74c3c;
+  --warm: #f0a500;
+  --cold: #6a6a7a;
+}
+
+body { background: var(--navy); font-family: 'Crimson Pro', Georgia, serif; color: var(--cream); min-height: 100vh; }
+
+/* ── LAYOUT ── */
+.app { display: flex; flex-direction: column; min-height: 100vh; }
+
+.topbar {
+  background: var(--navy2);
+  border-bottom: 1px solid var(--border2);
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  position: sticky; top: 0; z-index: 100;
+}
+
+.logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--brass);
+  letter-spacing: -0.01em;
+}
+.logo span { color: var(--cream2); font-weight: 400; font-size: 14px; margin-left: 10px; font-family: 'DM Mono', monospace; letter-spacing: 0.05em; }
+
+.search-wrap { position: relative; }
+.search-input {
+  background: var(--navy3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 12px 7px 34px;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--cream);
+  width: 260px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.search-input::placeholder { color: var(--slate2); }
+.search-input:focus { border-color: var(--brass); }
+.search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--slate); font-size: 14px; pointer-events: none; }
+
+.nav-tabs {
+  display: flex;
+  gap: 2px;
+  background: var(--navy2);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+}
+.nav-tab {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--slate);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 13px 20px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.nav-tab:hover { color: var(--cream); }
+.nav-tab.active { color: var(--brass); border-bottom-color: var(--brass); }
+
+.main { flex: 1; padding: 28px; max-width: 1200px; margin: 0 auto; width: 100%; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--navy2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px 24px;
+}
+
+/* ── SECTION LABEL ── */
+.section-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--brass);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.section-label::after { content: ''; flex: 1; height: 1px; background: linear-gradient(to right, rgba(100,181,217,0.3), transparent); }
+
+/* ── MONTH SELECTOR ── */
+.month-row { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
+.month-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--navy3);
+  color: var(--slate);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.month-btn:hover { border-color: var(--brass); color: var(--cream); }
+.month-btn.active { background: var(--brass); color: var(--navy); border-color: var(--brass); font-weight: 500; }
+
+/* ── TABLE ── */
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--brass);
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border2);
+  white-space: nowrap;
+}
+td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--cream);
+  vertical-align: middle;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--navy3); }
+
+/* ── BADGES ── */
+.badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  padding: 3px 9px;
+  border-radius: 3px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+.badge-green { background: rgba(46,204,113,0.15); color: #2ecc71; border: 1px solid rgba(46,204,113,0.3); }
+.badge-amber { background: rgba(240,165,0,0.15); color: #f0a500; border: 1px solid rgba(240,165,0,0.3); }
+.badge-red { background: rgba(231,76,60,0.15); color: #e74c3c; border: 1px solid rgba(231,76,60,0.3); }
+.badge-slate { background: rgba(90,122,148,0.15); color: var(--slate); border: 1px solid rgba(90,122,148,0.3); }
+.badge-brass { background: rgba(100,181,217,0.15); color: var(--brass); border: 1px solid var(--border2); }
+
+/* ── STAR RATING ── */
+.stars { color: var(--brass); font-size: 13px; letter-spacing: 1px; }
+.stars .empty { color: var(--navy4); }
+
+/* ── POTENTIAL COLUMNS ── */
+.potential-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+.potential-col { background: var(--navy2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.potential-header { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.potential-header-title { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; }
+.col-high .potential-header { background: rgba(46,204,113,0.06); }
+.col-high .potential-header-title { color: #2ecc71; }
+.col-med .potential-header { background: rgba(240,165,0,0.06); }
+.col-med .potential-header-title { color: #f0a500; }
+.col-low .potential-header { background: rgba(90,122,148,0.08); }
+.col-low .potential-header-title { color: var(--slate); }
+.potential-items { padding: 12px; display: flex; flex-direction: column; gap: 8px; min-height: 120px; }
+.potential-card {
+  background: var(--navy3);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.potential-card:hover { border-color: var(--border2); }
+.pc-addr { font-size: 13px; font-weight: 600; color: var(--cream); margin-bottom: 3px; }
+.pc-meta { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--slate); display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* ── PIPELINE CARD ── */
+.pipeline-grid { display: grid; gap: 12px; }
+.pipe-card { background: var(--navy3); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start; }
+.pipe-addr { font-size: 16px; font-weight: 600; color: var(--cream); margin-bottom: 4px; }
+.pipe-meta { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--slate); display: flex; gap: 14px; flex-wrap: wrap; margin-top: 6px; }
+.pipe-status-wrap { text-align: right; }
+.stage-pill {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  padding: 4px 12px;
+  border-radius: 3px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  display: inline-block;
+  margin-bottom: 6px;
+}
+.stage-warm { background: rgba(240,165,0,0.15); color: #f0a500; border: 1px solid rgba(240,165,0,0.3); }
+.stage-hot { background: rgba(231,76,60,0.15); color: #e74c3c; border: 1px solid rgba(231,76,60,0.3); }
+.stage-closing { background: rgba(46,204,113,0.15); color: #2ecc71; border: 1px solid rgba(46,204,113,0.3); }
+.stage-dead { background: rgba(231,76,60,0.15); color: #e74c3c; border: 1px solid rgba(231,76,60,0.3); }
+.pipe-progress { width: 120px; height: 4px; background: var(--navy4); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+.pipe-progress-fill { height: 100%; border-radius: 2px; transition: width 0.4s; }
+
+/* ── ARCHIVE ── */
+.archive-card { background: var(--navy3); border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; opacity: 0.75; }
+.archive-card:hover { opacity: 1; }
+.archive-addr { font-size: 14px; font-weight: 600; color: var(--cream); margin-bottom: 4px; }
+.archive-meta { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--slate); display: flex; gap: 14px; flex-wrap: wrap; }
+
+/* ── MODAL ── */
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 200; padding: 20px;
+}
+.modal {
+  background: var(--navy2);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 28px;
+}
+.modal-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  color: var(--cream);
+  margin-bottom: 22px;
+}
+
+/* ── FORM ── */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-full { grid-column: 1/-1; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--brass); }
+.form-input, .form-select, .form-textarea {
+  background: var(--navy3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 9px 12px;
+  font-family: 'Crimson Pro', serif;
+  font-size: 14px;
+  color: var(--cream);
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--brass); }
+.form-select option { background: var(--navy3); }
+.form-textarea { resize: vertical; min-height: 72px; }
+
+.star-picker { display: flex; gap: 6px; }
+.star-pick { font-size: 20px; cursor: pointer; color: var(--navy4); transition: color 0.1s; }
+.star-pick.lit { color: var(--brass); }
+
+/* ── BUTTONS ── */
+.btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 9px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: none;
+}
+.btn-brass { background: var(--brass); color: var(--navy); }
+.btn-brass:hover { background: var(--brass2); }
+.btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--slate); }
+.btn-ghost:hover { border-color: var(--border2); color: var(--cream); }
+.btn-danger { background: rgba(231,76,60,0.15); border: 1px solid rgba(231,76,60,0.3); color: #e74c3c; }
+.btn-danger:hover { background: rgba(231,76,60,0.25); }
+
+.btn-row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 22px; }
+.add-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  background: rgba(100,181,217,0.1);
+  border: 1px solid var(--border2);
+  color: var(--brass);
+  transition: all 0.15s;
+}
+.add-btn:hover { background: rgba(100,181,217,0.2); }
+
+/* ── STATS ROW ── */
+.stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 24px; }
+.stat-card { background: var(--navy3); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+.stat-card:hover { border-color: var(--brass); background: var(--navy4); }
+.stat-card:hover .stat-label { color: var(--brass); }
+.stat-val { font-family: 'Playfair Display', serif; font-size: 28px; color: var(--brass); line-height: 1; margin-bottom: 4px; }
+.stat-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--slate); transition: color 0.15s; }
+
+.empty-state { text-align: center; padding: 40px 20px; color: var(--slate); font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: 0.08em; }
+
+.mono { font-family: 'DM Mono', monospace; font-size: 12px; }
+.text-brass { color: var(--brass); }
+.text-slate { color: var(--slate); }
+
+/* close btn */
+.close-btn { background: none; border: none; color: var(--slate); font-size: 20px; cursor: pointer; float: right; line-height: 1; }
+.close-btn:hover { color: var(--cream); }
+
+/* ── EXPORT / IMPORT ── */
+.data-btns { display: flex; align-items: center; gap: 8px; }
+.btn-export { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; padding: 6px 14px; border-radius: 5px; cursor: pointer; background: rgba(100,181,217,0.1); border: 1px solid var(--border2); color: var(--brass); transition: all 0.15s; white-space: nowrap; }
+.btn-export:hover { background: rgba(100,181,217,0.2); }
+.btn-import { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; padding: 6px 14px; border-radius: 5px; cursor: pointer; background: transparent; border: 1px solid var(--border); color: var(--slate); transition: all 0.15s; white-space: nowrap; }
+.btn-import:hover { border-color: var(--border2); color: var(--cream); }
+.import-toast { font-family: 'DM Mono', monospace; font-size: 10px; padding: 5px 12px; border-radius: 4px; background: rgba(46,204,113,0.12); border: 1px solid rgba(46,204,113,0.3); color: #2ecc71; white-space: nowrap; }
+
+/* ── OUTREACH ── */
+.outreach-layout { display: grid; grid-template-columns: 300px 1fr; gap: 20px; align-items: start; }
+.template-list { display: flex; flex-direction: column; gap: 8px; }
+.template-item { background: var(--navy3); border: 1px solid var(--border); border-radius: 8px; padding: 13px 16px; cursor: pointer; transition: border-color 0.15s; }
+.template-item:hover { border-color: var(--border2); }
+.template-item.selected { border-color: var(--brass); background: var(--navy4); }
+.template-item-name { font-size: 14px; font-weight: 600; color: var(--cream); margin-bottom: 3px; }
+.template-item-meta { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--slate); }
+.compose-panel { background: var(--navy2); border: 1px solid var(--border); border-radius: 10px; padding: 24px; }
+.recipient-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; max-height: 240px; overflow-y: auto; }
+.recipient-row { display: grid; grid-template-columns: 18px 140px 1fr auto; gap: 10px; align-items: center; padding: 8px 12px; background: var(--navy3); border-radius: 6px; font-size: 13px; }
+.recipient-check { accent-color: var(--brass); width: 14px; height: 14px; cursor: pointer; }
+.recipient-name { color: var(--cream); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.recipient-email-input { background: var(--navy4); border: 1px solid var(--border); border-radius: 4px; padding: 5px 8px; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--cream); outline: none; width: 100%; transition: border-color 0.15s; }
+.recipient-email-input:focus { border-color: var(--brass); }
+.preview-wrap { background: var(--navy3); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin-bottom: 16px; }
+.preview-subject { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--brass); margin-bottom: 8px; }
+.preview-body { font-size: 14px; color: var(--cream); line-height: 1.8; white-space: pre-wrap; }
+.send-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+.send-info { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--slate); }
+.send-result { font-family: 'DM Mono', monospace; font-size: 11px; padding: 6px 14px; border-radius: 4px; background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.3); color: #2ecc71; }
+.tag { font-family: 'DM Mono', monospace; font-size: 10px; padding: 3px 8px; background: var(--navy4); border: 1px solid var(--border); border-radius: 3px; color: var(--slate); cursor: pointer; transition: all 0.1s; display: inline-block; }
+.tag:hover { border-color: var(--brass); color: var(--brass); }
+.tag-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+
+@media (max-width: 900px) { .outreach-layout { grid-template-columns: 1fr; } }
+@media (max-width: 700px) {
+  .potential-grid { grid-template-columns: 1fr; }
+  .stats-row { grid-template-columns: 1fr 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+  .main { padding: 16px; }
+  .topbar { padding: 0 16px; }
+  .nav-tabs { padding: 0 8px; overflow-x: auto; }
+}
+
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useMemo, useRef } = React;
+
+// ─── CONSTANTS ───────────────────────────────────────────────────────────────
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const ZONES = ["R1","R2","R3","RM","R4","MU","C1","Other"];
+const STAGES = ["Under Contract","Closing","Contract Fell Through","Closed"];
+const POTENTIALS = ["High","Medium","Low"];
+const MARKETS = ["Gresham, OR","Vancouver, WA","Clark County, WA","Custom..."];
+
+const STAGE_CLASS = { "Under Contract":"stage-warm", "Closing":"stage-closing", "Contract Fell Through":"stage-dead", "Closed":"badge-green" };
+const STAGE_PROGRESS = { "Under Contract":33, "Closing":75, "Contract Fell Through":0, "Closed":100 };
+const STAGE_COLOR = { "Under Contract":"#f0a500", "Closing":"#2ecc71", "Contract Fell Through":"#e74c3c", "Closed":"#2ecc71" };
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+const uid = () => Math.random().toString(36).slice(2,10);
+const fmt$ = v => v ? `$${Number(v).toLocaleString()}` : "—";
+const Stars = ({n}) => (
+  <span className="stars">
+    {[1,2,3,4,5].map(i => <span key={i} className={i<=n?"":"empty"}>★</span>)}
+  </span>
+);
+
+const SAMPLE_MAILERS = [
+  { id:uid(), address:"1423 SE Powell Blvd", owner:"Robert Chen", description:"Vacant corner lot, R3 zone, 8,400 SF. Absentee owner out of state for 6+ years.", zoning:"R3", maxPrice:"185000", neighborhood:4, market:"Gresham, OR", month:"Mar", year:2025, potential:"High", status:"Mailer Sent", notes:"2nd mailer sent. Owner responded briefly — not ready yet." },
+  { id:uid(), address:"4812 NE 122nd Ave", owner:"Patricia Williams", description:"Single family on oversized lot, possible demo candidate. Zoned RM.", zoning:"RM", maxPrice:"210000", neighborhood:3, market:"Gresham, OR", month:"Mar", year:2025, potential:"High", status:"In Conversation", notes:"Owner called back. Interested in timeline." },
+  { id:uid(), address:"9304 NE Halsey St", owner:"David & Susan Park", description:"Underutilized commercial strip, rezoning potential to RM.", zoning:"R2", maxPrice:"155000", neighborhood:3, market:"Gresham, OR", month:"Feb", year:2025, potential:"Medium", status:"Mailer Sent", notes:"" },
+  { id:uid(), address:"2218 E 4th Plain Blvd", owner:"James Kowalski", description:"Vacant infill lot, 6,200 SF, zoned R3. Adjacent to recent multifamily build.", zoning:"R3", maxPrice:"175000", neighborhood:4, market:"Clark County, WA", month:"Feb", year:2025, potential:"High", status:"Site Visit Done", notes:"Great lot. Ran comps — ARV supports the build." },
+  { id:uid(), address:"7601 NE 78th St", owner:"Margaret Torres", description:"Deferred maintenance SFR on R3 lot. Owner elderly, absentee.", zoning:"R3", maxPrice:"140000", neighborhood:2, market:"Clark County, WA", month:"Jan", year:2025, potential:"Medium", status:"Mailer Sent", notes:"" },
+  { id:uid(), address:"3340 SE 162nd Ave", owner:"Thomas Wright", description:"Two adjacent lots under same ownership — subdivision potential.", zoning:"R2", maxPrice:"195000", neighborhood:3, market:"Gresham, OR", month:"Jan", year:2025, potential:"Low", status:"No Response", notes:"Mailed 3x. No response." },
+];
+
+const SAMPLE_PIPELINE = [
+  { id:uid(), address:"4812 NE 122nd Ave", owner:"Patricia Williams", stage:"Under Contract", market:"Gresham, OR", askingPrice:"215000", offerPrice:"198000", targetClose:"2025-07-15", notes:"Verbal agreement on price. Title ordered. Waiting on survey.", zoning:"RM", potential:"High" },
+  { id:uid(), address:"2218 E 4th Plain Blvd", owner:"James Kowalski", stage:"Closing", market:"Clark County, WA", askingPrice:"185000", offerPrice:"172000", targetClose:"2025-06-01", notes:"Under contract. Inspection complete. Financing confirmed.", zoning:"R3", potential:"High" },
+];
+
+// ─── STORAGE ─────────────────────────────────────────────────────────────────
+async function load(key, fallback) {
+  try {
+    const val = localStorage.getItem(key);
+    return val ? JSON.parse(val) : fallback;
+  } catch { return fallback; }
+}
+async function save(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+}
+
+// ─── MARKET FIELD ────────────────────────────────────────────────────────────
+function MarketField({ value, onChange }) {
+  const isCustom = value && !MARKETS.slice(0,-1).includes(value);
+  const [showCustom, setShowCustom] = useState(isCustom);
+  const handleSelect = (e) => {
+    if (e.target.value === "Custom...") {
+      setShowCustom(true);
+      onChange("");
+    } else {
+      setShowCustom(false);
+      onChange(e.target.value);
+    }
+  };
+  return (
+    <div style={{display:"flex",flexDirection:"column",gap:6}}>
+      <select className="form-select" value={showCustom?"Custom...":value} onChange={handleSelect}>
+        {MARKETS.map(m=><option key={m}>{m}</option>)}
+      </select>
+      {showCustom && (
+        <input
+          className="form-input"
+          placeholder="Type market name, e.g. Battle Ground, WA"
+          value={value}
+          onChange={e=>onChange(e.target.value)}
+          autoFocus
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── STAR PICKER ─────────────────────────────────────────────────────────────
+function StarPicker({ value, onChange }) {
+  const [hov, setHov] = useState(0);
+  return (
+    <div className="star-picker">
+      {[1,2,3,4,5].map(i => (
+        <span
+          key={i}
+          className={`star-pick ${i<=(hov||value)?"lit":""}`}
+          onMouseEnter={()=>setHov(i)}
+          onMouseLeave={()=>setHov(0)}
+          onClick={()=>onChange(i)}
+        >★</span>
+      ))}
+    </div>
+  );
+}
+
+// ─── ADD/EDIT MAILER MODAL ───────────────────────────────────────────────────
+const EMPTY_MAILER = { address:"", owner:"", description:"", zoning:"R3", maxPrice:"", neighborhood:3, market:"Gresham, OR", month:MONTHS[new Date().getMonth()], year:new Date().getFullYear(), potential:"Medium", status:"Mailer Sent", notes:"" };
+
+function MailerModal({ item, onSave, onClose, onDelete }) {
+  const [f, setF] = useState(item || EMPTY_MAILER);
+  const set = (k,v) => setF(p=>({...p,[k]:v}));
+  return (
+    <div className="modal-backdrop" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="modal">
+        <button className="close-btn" onClick={onClose}>✕</button>
+        <div className="modal-title">{item?"Edit Property":"Add Property"}</div>
+        <div className="form-grid">
+          <div className="form-group form-full">
+            <label className="form-label">Property Address</label>
+            <input className="form-input" value={f.address} onChange={e=>set("address",e.target.value)} placeholder="123 Main St" />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Owner Name</label>
+            <input className="form-input" value={f.owner} onChange={e=>set("owner",e.target.value)} placeholder="John Smith" />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Market</label>
+            <MarketField value={f.market} onChange={v=>set("market",v)} />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Zoning</label>
+            <select className="form-select" value={f.zoning} onChange={e=>set("zoning",e.target.value)}>
+              {ZONES.map(z=><option key={z}>{z}</option>)}
+            </select>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Max Purchase Price</label>
+            <input className="form-input" value={f.maxPrice} onChange={e=>set("maxPrice",e.target.value.replace(/\D/g,""))} placeholder="180000" />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Month Mailed</label>
+            <select className="form-select" value={f.month} onChange={e=>set("month",e.target.value)}>
+              {MONTHS.map(m=><option key={m}>{m}</option>)}
+            </select>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Year</label>
+            <input className="form-input" value={f.year} onChange={e=>set("year",e.target.value)} placeholder="2025" />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Potential</label>
+            <select className="form-select" value={f.potential} onChange={e=>set("potential",e.target.value)}>
+              {POTENTIALS.map(p=><option key={p}>{p}</option>)}
+            </select>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Status</label>
+            <select className="form-select" value={f.status} onChange={e=>set("status",e.target.value)}>
+              {["Mailer Sent","No Response","In Conversation","Site Visit Done","Offer Made","Offer Accepted","Dead"].map(s=><option key={s}>{s}</option>)}
+            </select>
+          </div>
+          <div className="form-group form-full">
+            <label className="form-label">Neighborhood Rating</label>
+            <StarPicker value={f.neighborhood} onChange={v=>set("neighborhood",v)} />
+          </div>
+          <div className="form-group form-full">
+            <label className="form-label">Brief Description</label>
+            <textarea className="form-textarea" value={f.description} onChange={e=>set("description",e.target.value)} placeholder="Lot size, current use, opportunity summary..." />
+          </div>
+          <div className="form-group form-full">
+            <label className="form-label">Notes</label>
+            <textarea className="form-textarea" value={f.notes} onChange={e=>set("notes",e.target.value)} placeholder="Conversations, follow-ups, observations..." />
+          </div>
+        </div>
+        <div className="btn-row">
+          {item && <button className="btn btn-danger" onClick={()=>onDelete(item.id)}>Delete</button>}
+          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+          <button className="btn btn-brass" onClick={()=>onSave({...f,id:item?.id||uid()})}>Save</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── ADD/EDIT PIPELINE MODAL ─────────────────────────────────────────────────
+const EMPTY_PIPE = { address:"", owner:"", stage:"Warm", market:"Gresham, OR", askingPrice:"", offerPrice:"", targetClose:"", notes:"", zoning:"R3", potential:"High" };
+
+function PipeModal({ item, onSave, onClose, onDelete }) {
+  const [f, setF] = useState(item || EMPTY_PIPE);
+  const set = (k,v) => setF(p=>({...p,[k]:v}));
+  return (
+    <div className="modal-backdrop" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="modal">
+        <button className="close-btn" onClick={onClose}>✕</button>
+        <div className="modal-title">{item?"Edit Deal":"Add Deal"}</div>
+        <div className="form-grid">
+          <div className="form-group form-full">
+            <label className="form-label">Property Address</label>
+            <input className="form-input" value={f.address} onChange={e=>set("address",e.target.value)} placeholder="123 Main St" />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Owner Name</label>
+            <input className="form-input" value={f.owner} onChange={e=>set("owner",e.target.value)} />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Market</label>
+            <MarketField value={f.market} onChange={v=>set("market",v)} />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Stage</label>
+            <select className="form-select" value={f.stage} onChange={e=>set("stage",e.target.value)}>
+              {STAGES.map(s=><option key={s}>{s}</option>)}
+            </select>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Zoning</label>
+            <select className="form-select" value={f.zoning} onChange={e=>set("zoning",e.target.value)}>
+              {ZONES.map(z=><option key={z}>{z}</option>)}
+            </select>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Asking Price</label>
+            <input className="form-input" value={f.askingPrice} onChange={e=>set("askingPrice",e.target.value.replace(/\D/g,""))} placeholder="200000" />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Offer / Contract Price</label>
+            <input className="form-input" value={f.offerPrice} onChange={e=>set("offerPrice",e.target.value.replace(/\D/g,""))} placeholder="185000" />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Target Close Date</label>
+            <input className="form-input" type="date" value={f.targetClose} onChange={e=>set("targetClose",e.target.value)} />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Potential</label>
+            <select className="form-select" value={f.potential} onChange={e=>set("potential",e.target.value)}>
+              {POTENTIALS.map(p=><option key={p}>{p}</option>)}
+            </select>
+          </div>
+          <div className="form-group form-full">
+            <label className="form-label">Notes</label>
+            <textarea className="form-textarea" value={f.notes} onChange={e=>set("notes",e.target.value)} placeholder="Status, next steps, lender contact..." />
+          </div>
+        </div>
+        <div className="btn-row">
+          {item && <button className="btn btn-danger" onClick={()=>onDelete(item.id)}>Delete</button>}
+          <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+          <button className="btn btn-brass" onClick={()=>onSave({...f,id:item?.id||uid()})}>Save</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── SAMPLE TEMPLATES ────────────────────────────────────────────────────────
+const SAMPLE_TEMPLATES = [
+  { id:uid(), name:"First touch — Multnomah", subject:"Question about your property at {{address}}", body:`Dear {{owner}},\n\nMy name is Marcus, and I'm a local developer based in the Portland area. I build small multifamily housing in Gresham and the surrounding area, and I'm actively looking to purchase land for my next project.\n\nI came across your property at {{address}} and wanted to reach out directly. If you've ever considered selling — now or in the future — I'd genuinely love to have a conversation. I'm not a wholesaler and I'm not going to waste your time. I buy land, I build on it, and I hold what I build.\n\nI close quickly, I pay fair prices based on what the land is actually worth, and I don't need a real estate agent involved on your side if you'd prefer to keep it simple.\n\nNo pressure at all. If the timing isn't right, I completely understand. But if you're open to a quick conversation, please reply or give me a call.\n\nThank you for reading this.\n\nMarcus\n[Phone Number]`, tags:["first touch","Multnomah","land"] },
+  { id:uid(), name:"First touch — Clark County", subject:"Your property at {{address}} — quick question", body:`Dear {{owner}},\n\nMy name is Marcus. I build small multifamily housing in Clark County and I'm looking for my next site.\n\nYour property at {{address}} caught my attention. If selling has ever crossed your mind, I'd like to be the first call you make. I buy direct, I'm straightforward about what I can pay and why, and I move fast when the deal makes sense.\n\nI'm not here to lowball you or tie up your property with contingencies. If the numbers work for both of us, we can move forward simply and quickly.\n\nFeel free to reply or call me anytime.\n\nThanks,\nMarcus\n[Phone Number]`, tags:["first touch","Clark County","land"] },
+  { id:uid(), name:"2nd follow-up — no response", subject:"Following up — {{address}}", body:`Dear {{owner}},\n\nI reached out a few weeks ago regarding your property at {{address}}. I wanted to follow up briefly in case my previous message got lost.\n\nI'm still actively looking to purchase land in this area and your property remains of interest to me. If you have any questions about what I do or what I'd be willing to pay, I'm happy to have a quick 10-minute conversation — no obligation at all.\n\nIf now isn't the right time, I completely understand. I'll check back in a few months.\n\nBest,\nMarcus\n[Phone Number]`, tags:["follow-up","2nd touch"] },
+  { id:uid(), name:"Warm lead — in conversation", subject:"Next steps — {{address}}", body:`Dear {{owner}},\n\nThank you for taking my call. As discussed, I wanted to follow up in writing to confirm my interest in your property at {{address}}.\n\nBased on our conversation, here is where I stand:\n- I'm prepared to move quickly once we agree on terms\n- I can close with a construction loan or cash — whichever is cleaner for you\n- I don't need an agent involved on my side\n\nI'll have a formal offer prepared within the next few days. In the meantime, please don't hesitate to reach out with any questions.\n\nLooking forward to working with you.\n\nMarcus\n[Phone Number]`, tags:["warm lead","follow-up","offer"] },
+];
+
+// ─── OUTREACH COMPONENT ───────────────────────────────────────────────────────
+function OutreachTab({ mailers }) {
+  const [templates, setTemplates] = useState([]);
+  const [tplLoaded, setTplLoaded] = useState(false);
+  const [selectedTpl, setSelectedTpl] = useState(null);
+  const [editingTpl, setEditingTpl] = useState(null);
+  const [showTplModal, setShowTplModal] = useState(false);
+  const [recipientEmails, setRecipientEmails] = useState({});
+  const [selected, setSelected] = useState({});
+  const [sendLog, setSendLog] = useState([]);
+  const [sendMsg, setSendMsg] = useState("");
+
+  useEffect(() => {
+    load("dfp-templates-v1", SAMPLE_TEMPLATES).then(t => {
+      setTemplates(t); setTplLoaded(true);
+      if (t.length > 0) setSelectedTpl(t[0]);
+    });
+  }, []);
+  useEffect(() => { if (tplLoaded) save("dfp-templates-v1", templates); }, [templates, tplLoaded]);
+
+  const merge = (tpl, owner, address) => {
+    if (!tpl) return { subject:"", body:"" };
+    return {
+      subject: tpl.subject.replace(/\{\{owner\}\}/g, owner).replace(/\{\{address\}\}/g, address),
+      body: tpl.body.replace(/\{\{owner\}\}/g, owner).replace(/\{\{address\}\}/g, address),
+    };
+  };
+
+  const toggleAll = val => { const n={}; mailers.forEach(m=>{n[m.id]=val;}); setSelected(n); };
+  const selectedMailers = mailers.filter(m=>selected[m.id]);
+
+  const sendOne = (mailer) => {
+    const email = recipientEmails[mailer.id]||"";
+    if (!email) { alert(`No email address entered for ${mailer.owner}. Add their email in the recipient row first.`); return; }
+    const {subject,body} = merge(selectedTpl, mailer.owner, mailer.address);
+    window.open(`mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,"_blank");
+    setSendLog(p=>[{id:uid(),owner:mailer.owner,address:mailer.address,email,time:new Date().toLocaleTimeString()},...p]);
+  };
+
+  const sendAll = () => {
+    const valid = selectedMailers.filter(m=>recipientEmails[m.id]);
+    if (valid.length===0){alert("Add email addresses to the selected recipients first.");return;}
+    let i=0;
+    const next=()=>{
+      if(i>=valid.length){setSendMsg(`${valid.length} email${valid.length!==1?"s":""} queued in your mail client`);setTimeout(()=>setSendMsg(""),5000);return;}
+      sendOne(valid[i]); i++; setTimeout(next,700);
+    };
+    next();
+  };
+
+  const saveTpl = tpl => {
+    setTemplates(p=>p.find(x=>x.id===tpl.id)?p.map(x=>x.id===tpl.id?tpl:x):[tpl,...p]);
+    setSelectedTpl(tpl); setShowTplModal(false); setEditingTpl(null);
+  };
+  const deleteTpl = id => {
+    const rest = templates.filter(x=>x.id!==id);
+    setTemplates(rest); setSelectedTpl(rest[0]||null); setShowTplModal(false); setEditingTpl(null);
+  };
+
+  const previewMerged = selectedTpl
+    ? merge(selectedTpl, selectedMailers.length===1?selectedMailers[0].owner:"[Owner Name]", selectedMailers.length===1?selectedMailers[0].address:"[Property Address]")
+    : {subject:"",body:""};
+
+  return (
+    <div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+        <div className="section-label" style={{margin:0}}>Outreach — email templates &amp; sending</div>
+        <button className="add-btn" onClick={()=>{setEditingTpl({id:uid(),name:"",subject:"",body:"",tags:[]});setShowTplModal(true);}}>+ New Template</button>
+      </div>
+
+      <div className="outreach-layout">
+        {/* LEFT — template library */}
+        <div>
+          <div className="section-label">Templates</div>
+          <div className="template-list">
+            {templates.map(t=>(
+              <div key={t.id} className={`template-item ${selectedTpl?.id===t.id?"selected":""}`} onClick={()=>setSelectedTpl(t)}>
+                <div className="template-item-name">{t.name}</div>
+                <div className="template-item-meta">{(t.tags||[]).join(" · ")}</div>
+              </div>
+            ))}
+            {templates.length===0&&<div className="empty-state" style={{padding:"20px 0"}}>No templates yet</div>}
+          </div>
+          {selectedTpl&&<button className="btn btn-ghost" style={{marginTop:10,width:"100%",fontSize:11}} onClick={()=>{setEditingTpl(selectedTpl);setShowTplModal(true);}}>Edit Template</button>}
+        </div>
+
+        {/* RIGHT — compose + recipients */}
+        <div className="compose-panel">
+          {!selectedTpl ? <div className="empty-state">Select a template to compose</div> : (
+            <>
+              <div style={{fontSize:18,fontFamily:"'Playfair Display',serif",color:"var(--cream)",marginBottom:4}}>{selectedTpl.name}</div>
+              <div className="mono text-slate" style={{marginBottom:20,fontSize:11}}>Subject: {selectedTpl.subject}</div>
+
+              <div className="section-label">Message preview</div>
+              <div className="preview-wrap" style={{marginBottom:20}}>
+                <div className="preview-subject">Subject: {previewMerged.subject}</div>
+                <div className="preview-body">{previewMerged.body}</div>
+              </div>
+
+              <div className="section-label">
+                Recipients — add each owner's email address
+                <span style={{marginLeft:"auto",display:"flex",gap:8,flexShrink:0}}>
+                  <button className="btn btn-ghost" style={{padding:"3px 10px",fontSize:10}} onClick={()=>toggleAll(true)}>All</button>
+                  <button className="btn btn-ghost" style={{padding:"3px 10px",fontSize:10}} onClick={()=>toggleAll(false)}>None</button>
+                </span>
+              </div>
+
+              {mailers.length===0
+                ? <div className="empty-state" style={{padding:"20px 0"}}>No properties in mailer log yet</div>
+                : <div className="recipient-list">
+                    {mailers.map(m=>(
+                      <div key={m.id} className="recipient-row">
+                        <input type="checkbox" className="recipient-check" checked={!!selected[m.id]} onChange={e=>setSelected(p=>({...p,[m.id]:e.target.checked}))}/>
+                        <div className="recipient-name" title={m.owner}>{m.owner}</div>
+                        <input className="recipient-email-input" placeholder="email@address.com" value={recipientEmails[m.id]||""} onChange={e=>setRecipientEmails(p=>({...p,[m.id]:e.target.value}))}/>
+                        <button className="btn btn-ghost" style={{padding:"4px 10px",fontSize:10,whiteSpace:"nowrap"}} onClick={()=>sendOne(m)}>Send ↗</button>
+                      </div>
+                    ))}
+                  </div>
+              }
+
+              <div className="send-controls">
+                <button className="btn btn-brass" onClick={sendAll} style={{opacity:selectedMailers.length===0?0.4:1}}>
+                  Send {selectedMailers.length>0?`${selectedMailers.length} `:""}Individual Email{selectedMailers.length!==1?"s":""}
+                </button>
+                <span className="send-info">{selectedMailers.length} selected · one email window per recipient</span>
+                {sendMsg&&<span className="send-result">{sendMsg}</span>}
+              </div>
+
+              {sendLog.length>0&&(
+                <div style={{marginTop:20}}>
+                  <div className="section-label">Send log — this session</div>
+                  <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                    {sendLog.slice(0,10).map(l=>(
+                      <div key={l.id} style={{display:"flex",justifyContent:"space-between",fontSize:12,padding:"6px 10px",background:"var(--navy3)",borderRadius:5}}>
+                        <span style={{color:"var(--cream)"}}>{l.owner}<span style={{color:"var(--slate)"}}> — {l.address}</span></span>
+                        <span className="mono text-slate">{l.time}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
+      {showTplModal&&editingTpl&&(
+        <div className="modal-backdrop" onClick={e=>e.target===e.currentTarget&&setShowTplModal(false)}>
+          <div className="modal" style={{maxWidth:640}}>
+            <button className="close-btn" onClick={()=>setShowTplModal(false)}>✕</button>
+            <div className="modal-title">{templates.find(x=>x.id===editingTpl.id)?"Edit Template":"New Template"}</div>
+            <div className="form-grid">
+              <div className="form-group form-full">
+                <label className="form-label">Template Name</label>
+                <input className="form-input" value={editingTpl.name} onChange={e=>setEditingTpl(p=>({...p,name:e.target.value}))} placeholder="e.g. First touch — Gresham"/>
+              </div>
+              <div className="form-group form-full">
+                <label className="form-label">Subject Line</label>
+                <input className="form-input" value={editingTpl.subject} onChange={e=>setEditingTpl(p=>({...p,subject:e.target.value}))} placeholder="Question about your property at {{address}}"/>
+              </div>
+              <div className="form-group form-full">
+                <label className="form-label">Tags (comma separated)</label>
+                <input className="form-input" value={(editingTpl.tags||[]).join(", ")} onChange={e=>setEditingTpl(p=>({...p,tags:e.target.value.split(",").map(t=>t.trim()).filter(Boolean)}))} placeholder="first touch, Gresham, land"/>
+              </div>
+              <div className="form-group form-full">
+                <label className="form-label">Message Body — use {"{{"+"owner}}"} and {"{{"+"address}}"} for merge fields</label>
+                <textarea className="form-textarea" style={{minHeight:240}} value={editingTpl.body} onChange={e=>setEditingTpl(p=>({...p,body:e.target.value}))} placeholder={"Dear {{owner}},\n\n..."}/>
+              </div>
+            </div>
+            <div className="btn-row">
+              {templates.find(x=>x.id===editingTpl.id)&&<button className="btn btn-danger" onClick={()=>deleteTpl(editingTpl.id)}>Delete</button>}
+              <button className="btn btn-ghost" onClick={()=>setShowTplModal(false)}>Cancel</button>
+              <button className="btn btn-brass" onClick={()=>saveTpl({...editingTpl})}>Save Template</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── MAIN APP ────────────────────────────────────────────────────────────────
+function App() {
+  const [tab, setTab] = useState("mailers");
+  const [mailers, setMailers] = useState([]);
+  const [pipeline, setPipeline] = useState([]);
+  const [loaded, setLoaded] = useState(false);
+  const [search, setSearch] = useState("");
+  const [activeMonth, setActiveMonth] = useState("All");
+  const [activeYear, setActiveYear] = useState("All");
+  const [mailerModal, setMailerModal] = useState(null); // null | "new" | item
+  const [pipeModal, setPipeModal] = useState(null);
+  const [importToast, setImportToast] = useState("");
+  const importRef = useRef(null);
+
+  // ── Export all data as JSON file ──
+  const handleExport = () => {
+    const data = {
+      version: 1,
+      exported: new Date().toISOString(),
+      mailers: mailers,
+      pipeline: pipeline,
+      archive: archive,
+      templates: JSON.parse(localStorage.getItem("dfp-templates-v1") || "[]"),
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `dealflow-backup-${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // ── Import data from JSON file ──
+  const handleImport = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (data.mailers) { setMailers(data.mailers); save("dfp-mailers-v2", data.mailers); }
+        if (data.pipeline) { setPipeline(data.pipeline); save("dfp-pipeline-v2", data.pipeline); }
+        if (data.archive) { setArchive(data.archive); save("dfp-archive-v1", data.archive); }
+        if (data.templates) { save("dfp-templates-v1", data.templates); }
+        setImportToast("Data restored successfully");
+        setTimeout(() => setImportToast(""), 3500);
+      } catch {
+        setImportToast("Error — invalid backup file");
+        setTimeout(() => setImportToast(""), 3500);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  };
+
+  // Load from storage + migrate stale data
+  useEffect(() => {
+    Promise.all([
+      load("dfp-mailers-v2", SAMPLE_MAILERS),
+      load("dfp-pipeline-v2", SAMPLE_PIPELINE)
+    ]).then(([m,p]) => {
+      // Migrate: remove pipeline entries with old stages (Warm, Hot) that no longer exist
+      const validStages = ["Under Contract","Closing","Contract Fell Through"];
+      const cleanPipeline = p.filter(entry => validStages.includes(entry.stage));
+      setMailers(m); setPipeline(cleanPipeline); setLoaded(true);
+      // Save cleaned pipeline back immediately
+      if (cleanPipeline.length !== p.length) save("dfp-pipeline-v2", cleanPipeline);
+    });
+  }, []);
+
+  useEffect(() => { if (loaded) save("dfp-mailers-v2", mailers); }, [mailers, loaded]);
+  useEffect(() => { if (loaded) save("dfp-pipeline-v2", pipeline); }, [pipeline, loaded]);
+
+  // Search filter across both datasets
+  const q = search.toLowerCase();
+  const filterItem = item => !q || Object.values(item).some(v => String(v).toLowerCase().includes(q));
+
+  // Mailer filters
+  const years = useMemo(() => ["All", ...new Set(mailers.map(m=>String(m.year)))].sort(), [mailers]);
+  const filteredMailers = useMemo(() => mailers.filter(m => {
+    if (!filterItem(m)) return false;
+    if (activeMonth !== "All" && m.month !== activeMonth) return false;
+    if (activeYear !== "All" && String(m.year) !== activeYear) return false;
+    return true;
+  }), [mailers, search, activeMonth, activeYear]);
+
+  const filteredPipeline = useMemo(() => pipeline.filter(filterItem), [pipeline, search]);
+
+  const [archive, setArchive] = useState([]);
+
+  useEffect(() => {
+    load("dfp-archive-v1", []).then(a => setArchive(a));
+  }, []);
+  useEffect(() => { if (loaded) save("dfp-archive-v1", archive); }, [archive, loaded]);
+
+  // Handlers
+  const saveMailer = item => {
+    if (item.status === "Offer Accepted") {
+      // Move to pipeline as Under Contract
+      const pipeEntry = {
+        id: uid(),
+        mailerId: item.id,
+        address: item.address,
+        owner: item.owner,
+        stage: "Under Contract",
+        market: item.market,
+        askingPrice: item.maxPrice || "",
+        offerPrice: "",
+        targetClose: "",
+        notes: `Moved from Mailer Log on ${MONTHS[new Date().getMonth()]} ${new Date().getFullYear()}. ${item.notes||""}`.trim(),
+        zoning: item.zoning,
+        potential: item.potential,
+      };
+      setPipeline(p => [pipeEntry, ...p]);
+      // Remove from mailer log entirely
+      setMailers(p => p.filter(x => x.id !== item.id));
+    } else {
+      setMailers(p => p.find(x=>x.id===item.id) ? p.map(x=>x.id===item.id?item:x) : [item,...p]);
+    }
+    setMailerModal(null);
+  };
+  const deleteMailer = id => { setMailers(p=>p.filter(x=>x.id!==id)); setMailerModal(null); };
+
+  const savePipe = item => {
+    if (item.stage === "Closed") {
+      // Auto-archive
+      const archivedEntry = {...item, archivedAt: new Date().toISOString(), stage:"Closed"};
+      setArchive(p => [archivedEntry, ...p]);
+      setPipeline(p => p.filter(x=>x.id!==item.id));
+      setPipeModal(null);
+      return;
+    }
+    if (item.stage === "Contract Fell Through") {
+      // Move back to mailer log as Dead with current month/year
+      const now = new Date();
+      const returnedMailer = {
+        id: item.mailerId || uid(),
+        address: item.address,
+        owner: item.owner,
+        description: "",
+        zoning: item.zoning || "R3",
+        maxPrice: item.askingPrice || "",
+        neighborhood: 3,
+        market: item.market,
+        month: MONTHS[now.getMonth()],
+        year: now.getFullYear(),
+        potential: item.potential || "Medium",
+        status: "Dead",
+        notes: `Contract fell through ${MONTHS[now.getMonth()]} ${now.getFullYear()}. ${item.notes||""}`.trim(),
+      };
+      // Update or add back in mailer log
+      setMailers(p => {
+        const exists = p.find(x=>x.id===returnedMailer.id);
+        if (exists) return p.map(x=>x.id===returnedMailer.id ? returnedMailer : x);
+        return [returnedMailer, ...p];
+      });
+      setPipeline(p => p.filter(x=>x.id!==item.id));
+      setPipeModal(null);
+      return;
+    }
+    setPipeline(p => p.find(x=>x.id===item.id) ? p.map(x=>x.id===item.id?item:x) : [item,...p]);
+    setPipeModal(null);
+  };
+  const deletePipe = id => { setPipeline(p=>p.filter(x=>x.id!==id)); setPipeModal(null); };
+
+  // Stats — all counts are derived from correct data sources
+  const totalMailers = mailers.length;
+  const conversations = mailers.filter(m=>["In Conversation","Site Visit Done","Offer Made"].includes(m.status)).length;
+  const pipeActive = pipeline.filter(p=>["Under Contract","Closing"].includes(p.stage)).length;
+  const closed = archive.length;
+
+  // Potential groups
+  const potentialGroups = useMemo(() => ({
+    High: mailers.filter(m=>m.potential==="High"&&filterItem(m)),
+    Medium: mailers.filter(m=>m.potential==="Medium"&&filterItem(m)),
+    Low: mailers.filter(m=>m.potential==="Low"&&filterItem(m)),
+  }), [mailers, search]);
+
+  const statusBadge = s => {
+    if (["In Conversation","Site Visit Done"].includes(s)) return <span className="badge badge-amber">{s}</span>;
+    if (s==="Offer Made") return <span className="badge badge-green">{s}</span>;
+    if (s==="Offer Accepted") return <span className="badge badge-green" style={{background:"rgba(46,204,113,0.25)",fontWeight:700}}>{s} ✓</span>;
+    if (s==="Dead") return <span className="badge badge-red">{s}</span>;
+    if (s==="No Response") return <span className="badge badge-slate">{s}</span>;
+    return <span className="badge badge-slate">{s}</span>;
+  };
+
+  if (!loaded) return <div style={{padding:40,textAlign:"center",color:"#7a95ae",fontFamily:"'DM Mono',monospace",fontSize:12}}>Loading...</div>;
+
+  return (
+    <>
+      <div className="app">
+
+        {/* TOP BAR */}
+        <div className="topbar">
+          <div className="logo">DealFlow <span>/ Marcus</span></div>
+          <div style={{display:"flex",alignItems:"center",gap:12}}>
+            <div className="data-btns">
+              {importToast && <span className="import-toast">{importToast}</span>}
+              <button className="btn-export" onClick={handleExport} title="Download all your data as a backup file">↓ Export</button>
+              <button className="btn-import" onClick={()=>importRef.current.click()} title="Restore data from a backup file">↑ Import</button>
+              <input ref={importRef} type="file" accept=".json" style={{display:"none"}} onChange={handleImport} />
+            </div>
+            <div className="search-wrap">
+              <span className="search-icon">⌕</span>
+              <input className="search-input" placeholder="Search any property, owner, address..." value={search} onChange={e=>setSearch(e.target.value)} />
+            </div>
+          </div>
+        </div>
+
+        {/* NAV */}
+        <div className="nav-tabs">
+          <button className={`nav-tab ${tab==="mailers"?"active":""}`} onClick={()=>setTab("mailers")}>Mailer Log</button>
+          <button className={`nav-tab ${tab==="pipeline"?"active":""}`} onClick={()=>setTab("pipeline")}>Pipeline</button>
+          <button className={`nav-tab ${tab==="potential"?"active":""}`} onClick={()=>setTab("potential")}>Deal Potential</button>
+          <button className={`nav-tab ${tab==="outreach"?"active":""}`} onClick={()=>setTab("outreach")}>Outreach</button>
+          <button className={`nav-tab ${tab==="archive"?"active":""}`} onClick={()=>setTab("archive")}>Archive {archive.length>0&&<span style={{marginLeft:4,background:"rgba(100,181,217,0.2)",borderRadius:10,padding:"1px 7px",fontSize:10}}>{archive.length}</span>}</button>
+          <button className={`nav-tab ${tab==="overview"?"active":""}`} onClick={()=>setTab("overview")}>Overview</button>
+        </div>
+
+        <div className="main">
+
+          {/* ══ OVERVIEW TAB ══ */}
+          {tab==="overview" && (
+            <>
+              <div className="stats-row">
+                <div className="stat-card" onClick={()=>setTab("mailers")} title="Go to Mailer Log">
+                  <div className="stat-val">{totalMailers}</div>
+                  <div className="stat-label">Total Mailers →</div>
+                </div>
+                <div className="stat-card" onClick={()=>setTab("mailers")} title="Go to Mailer Log">
+                  <div className="stat-val">{conversations}</div>
+                  <div className="stat-label">Active Conversations →</div>
+                </div>
+                <div className="stat-card" onClick={()=>setTab("pipeline")} title="Go to Pipeline">
+                  <div className="stat-val">{pipeActive}</div>
+                  <div className="stat-label">Deals in Pipeline →</div>
+                </div>
+                <div className="stat-card" onClick={()=>setTab("archive")} title="Go to Archive">
+                  <div className="stat-val">{closed}</div>
+                  <div className="stat-label">Deals Closed →</div>
+                </div>
+              </div>
+
+              <div className="section-label">Recent mailer activity</div>
+              <div className="card">
+                {mailers.slice(0,5).map(m=>(
+                  <div key={m.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:"1px solid var(--border)"}}>
+                    <div>
+                      <div style={{fontSize:14,fontWeight:600,marginBottom:3}}>{m.address}</div>
+                      <div className="mono text-slate">{m.owner} · {m.month} {m.year} · {m.market}</div>
+                    </div>
+                    <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                      <Stars n={m.neighborhood} />
+                      {statusBadge(m.status)}
+                    </div>
+                  </div>
+                ))}
+                {mailers.length===0 && <div className="empty-state">No mailers yet — add your first property</div>}
+              </div>
+
+              <div className="section-label" style={{marginTop:24}}>Active pipeline</div>
+              <div className="card">
+                {pipeline.filter(p=>["Under Contract","Closing"].includes(p.stage)).map(p=>(
+                  <div key={p.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 0",borderBottom:"1px solid var(--border)"}}>
+                    <div>
+                      <div style={{fontSize:14,fontWeight:600,marginBottom:3}}>{p.address}</div>
+                      <div className="mono text-slate">{p.market} · Close: {p.targetClose||"TBD"}</div>
+                    </div>
+                    <span className={`stage-pill ${STAGE_CLASS[p.stage]||"stage-warm"}`}>{p.stage}</span>
+                  </div>
+                ))}
+                {pipeline.filter(p=>["Under Contract","Closing"].includes(p.stage)).length===0 && <div className="empty-state">No active deals in pipeline</div>}
+              </div>
+            </>
+          )}
+
+          {/* ══ MAILER LOG TAB ══ */}
+          {tab==="mailers" && (
+            <>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+                <div>
+                  <div className="section-label" style={{marginBottom:8}}>Mailer log by month</div>
+                  <div className="month-row">
+                    <button className={`month-btn ${activeYear==="All"?"active":""}`} onClick={()=>setActiveYear("All")}>All Years</button>
+                    {years.filter(y=>y!=="All").map(y=>(
+                      <button key={y} className={`month-btn ${activeYear===y?"active":""}`} onClick={()=>setActiveYear(y)}>{y}</button>
+                    ))}
+                  </div>
+                  <div className="month-row">
+                    <button className={`month-btn ${activeMonth==="All"?"active":""}`} onClick={()=>setActiveMonth("All")}>All</button>
+                    {MONTHS.map(m=>(
+                      <button key={m} className={`month-btn ${activeMonth===m?"active":""}`} onClick={()=>setActiveMonth(m)}>{m}</button>
+                    ))}
+                  </div>
+                </div>
+                <button className="add-btn" onClick={()=>setMailerModal("new")}>+ Add Property</button>
+              </div>
+
+              <div className="card" style={{padding:0,overflow:"hidden"}}>
+                <div className="tbl-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Address</th>
+                        <th>Owner</th>
+                        <th>Zoning</th>
+                        <th>Max Price</th>
+                        <th>Neighborhood</th>
+                        <th>Status</th>
+                        <th>Potential</th>
+                        <th>Month</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredMailers.map(m=>(
+                        <tr key={m.id} style={{cursor:"pointer"}} onClick={()=>setMailerModal(m)}>
+                          <td><div style={{fontWeight:600}}>{m.address}</div><div className="mono text-slate" style={{fontSize:11,marginTop:2}}>{m.market}</div></td>
+                          <td className="mono" style={{fontSize:12}}>{m.owner}</td>
+                          <td><span className="badge badge-brass">{m.zoning}</span></td>
+                          <td className="mono text-brass">{fmt$(m.maxPrice)}</td>
+                          <td><Stars n={m.neighborhood} /></td>
+                          <td>{statusBadge(m.status)}</td>
+                          <td>
+                            <span className={`badge ${m.potential==="High"?"badge-green":m.potential==="Medium"?"badge-amber":"badge-slate"}`}>{m.potential}</span>
+                          </td>
+                          <td className="mono text-slate">{m.month} {m.year}</td>
+                          <td><button className="btn btn-ghost" style={{padding:"4px 10px",fontSize:11}} onClick={e=>{e.stopPropagation();setMailerModal(m);}}>Edit</button></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {filteredMailers.length===0 && <div className="empty-state">No properties match your filters</div>}
+                </div>
+              </div>
+              <div className="mono text-slate" style={{fontSize:11,marginTop:10,textAlign:"right"}}>{filteredMailers.length} of {mailers.length} properties</div>
+            </>
+          )}
+
+          {/* ══ PIPELINE TAB ══ */}
+          {tab==="pipeline" && (
+            <>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+                <div className="section-label" style={{margin:0}}>Active pipeline · under contract &amp; closing</div>
+                <button className="add-btn" onClick={()=>setPipeModal("new")}>+ Add Deal</button>
+              </div>
+
+              {["Under Contract","Closing","Contract Fell Through"].map(stage=>{
+                const deals = filteredPipeline.filter(p=>p.stage===stage);
+                if (deals.length===0) return null;
+                return (
+                  <div key={stage} style={{marginBottom:28}}>
+                    <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
+                      <span className={`stage-pill ${STAGE_CLASS[stage]}`}>{stage}</span>
+                      <span className="mono text-slate" style={{fontSize:11}}>{deals.length} deal{deals.length!==1?"s":""}</span>
+                      {stage==="Contract Fell Through" && <span className="mono text-slate" style={{fontSize:11}}>· saving will move back to Mailer Log as Dead</span>}
+                      {stage==="Closing" && <span className="mono text-slate" style={{fontSize:11}}>· saving as Closed will archive</span>}
+                    </div>
+                    <div className="pipeline-grid">
+                      {deals.map(p=>(
+                        <div key={p.id} className="pipe-card" onClick={()=>setPipeModal(p)} style={{cursor:"pointer"}}>
+                          <div>
+                            <div className="pipe-addr">{p.address}</div>
+                            <div className="mono text-slate" style={{fontSize:11}}>{p.market}</div>
+                            <div className="pipe-meta">
+                              <span>Owner: {p.owner}</span>
+                              <span>Ask: {fmt$(p.askingPrice)}</span>
+                              <span>Offer: {fmt$(p.offerPrice)}</span>
+                              <span>Zone: {p.zoning}</span>
+                              {p.targetClose && <span>Close: {p.targetClose}</span>}
+                            </div>
+                            {p.notes && <div style={{fontSize:13,color:"var(--slate)",marginTop:8,fontStyle:"italic",lineHeight:1.5}}>{p.notes}</div>}
+                            <div className="pipe-progress" style={{marginTop:10}}>
+                              <div className="pipe-progress-fill" style={{width:STAGE_PROGRESS[stage]+"%",background:STAGE_COLOR[stage]}} />
+                            </div>
+                          </div>
+                          <div className="pipe-status-wrap">
+                            <span className={`badge ${p.potential==="High"?"badge-green":p.potential==="Medium"?"badge-amber":"badge-slate"}`}>{p.potential}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+              {filteredPipeline.length===0 && <div className="empty-state" style={{marginTop:40}}>No active deals. When a mailer is marked Offer Accepted it will appear here as Under Contract.</div>}
+            </>
+          )}
+
+          {/* ══ POTENTIAL TAB ══ */}
+          {tab==="potential" && (
+            <>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+                <div className="section-label" style={{margin:0}}>Deal potential — all tracked properties</div>
+                <button className="add-btn" onClick={()=>setMailerModal("new")}>+ Add Property</button>
+              </div>
+              <div className="potential-grid">
+                {[
+                  {key:"High",label:"High Potential",cls:"col-high"},
+                  {key:"Medium",label:"Medium Potential",cls:"col-med"},
+                  {key:"Low",label:"Low Potential",cls:"col-low"},
+                ].map(({key,label,cls})=>(
+                  <div key={key} className={`potential-col ${cls}`}>
+                    <div className="potential-header">
+                      <span className="potential-header-title">{label}</span>
+                      <span className="mono" style={{fontSize:12,opacity:0.7}}>{potentialGroups[key].length}</span>
+                    </div>
+                    <div className="potential-items">
+                      {potentialGroups[key].map(m=>(
+                        <div key={m.id} className="potential-card" onClick={()=>setMailerModal(m)}>
+                          <div className="pc-addr">{m.address}</div>
+                          <div className="pc-meta">
+                            <span>{m.zoning}</span>
+                            <span>{fmt$(m.maxPrice)}</span>
+                            <span>{m.market.split(",")[0]}</span>
+                          </div>
+                          <div style={{marginTop:6,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                            <Stars n={m.neighborhood} />
+                            {statusBadge(m.status)}
+                          </div>
+                          {m.description && <div style={{fontSize:12,color:"var(--slate)",marginTop:6,lineHeight:1.5,fontStyle:"italic"}}>{m.description.slice(0,80)}{m.description.length>80?"...":""}</div>}
+                        </div>
+                      ))}
+                      {potentialGroups[key].length===0 && <div className="empty-state" style={{padding:"24px 0"}}>None yet</div>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* ══ ARCHIVE TAB ══ */}
+          {tab==="archive" && (
+            <>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+                <div className="section-label" style={{margin:0}}>Archive — closed deals</div>
+                <span className="mono text-slate" style={{fontSize:11}}>{archive.length} deal{archive.length!==1?"s":""} closed</span>
+              </div>
+              {archive.length===0
+                ? <div className="empty-state" style={{marginTop:60}}>No closed deals yet. When a pipeline deal is marked Closed it will appear here.</div>
+                : <div style={{display:"grid",gap:10}}>
+                    {archive.map(a=>(
+                      <div key={a.id} className="archive-card">
+                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                          <div>
+                            <div className="archive-addr">{a.address}</div>
+                            <div className="archive-meta" style={{marginTop:4}}>
+                              <span>{a.market}</span>
+                              <span>Owner: {a.owner}</span>
+                              {a.offerPrice && <span>Closed at: {fmt$(a.offerPrice)}</span>}
+                              {a.targetClose && <span>Close date: {a.targetClose}</span>}
+                              {a.zoning && <span>Zone: {a.zoning}</span>}
+                              {a.archivedAt && <span>Archived: {new Date(a.archivedAt).toLocaleDateString()}</span>}
+                            </div>
+                            {a.notes && <div style={{fontSize:13,color:"var(--slate)",marginTop:6,fontStyle:"italic",lineHeight:1.5}}>{a.notes}</div>}
+                          </div>
+                          <span className="badge badge-green" style={{flexShrink:0,marginLeft:16}}>Closed</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+              }
+            </>
+          )}
+
+          {/* ══ OUTREACH TAB ══ */}
+          {tab==="outreach" && <OutreachTab mailers={mailers} />}
+
+        </div>
+      </div>
+
+      {/* MODALS */}
+      {mailerModal && (
+        <MailerModal
+          item={mailerModal==="new"?null:mailerModal}
+          onSave={saveMailer}
+          onDelete={deleteMailer}
+          onClose={()=>setMailerModal(null)}
+        />
+      )}
+      {pipeModal && (
+        <PipeModal
+          item={pipeModal==="new"?null:pipeModal}
+          onSave={savePipe}
+          onDelete={deletePipe}
+          onClose={()=>setPipeModal(null)}
+        />
+      )}
+    </>
+  );
+}
+
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
